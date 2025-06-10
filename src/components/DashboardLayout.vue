@@ -10,13 +10,13 @@
         <nav>
           <ul class="flex space-x-6">
             <li>
-              <RouterLink to="dashboard/users/profile" class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
+              <RouterLink to="/dashboard/users/profile" class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
                 <i class="fas fa-user-circle mr-2"></i>
                 <span>Profile</span>
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="dashboard/users/logout" class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
+              <RouterLink to="/dashboard/users/logout" class="text-gray-100 hover:text-white flex items-center transition-colors duration-200">
                 <i class="fas fa-sign-out-alt mr-2"></i>
                 <span>Logout</span>
               </RouterLink>
