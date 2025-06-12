@@ -17,7 +17,7 @@
         </button>
       </div>
       <div id="searchFormContent" class="mt-4">
-        <form>
+        <form v-on:submit.prevent="fetchContacts">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
               <label for="search_name" class="block text-gray-300 text-sm font-medium mb-2">Name</label>
@@ -30,7 +30,7 @@
                   id="search_name"
                   name="search_name"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by name"
+                  placeholder="Search by name" v-model="search.name"
                 />
               </div>
             </div>
@@ -45,7 +45,7 @@
                   id="search_email"
                   name="search_email"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by email"
+                  placeholder="Search by email" v-model="search.email"
                 />
               </div>
             </div>
@@ -60,7 +60,7 @@
                   id="search_phone"
                   name="search_phone"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by phone"
+                  placeholder="Search by phone" v-model="search.phone"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@
     <!-- Pagination -->
     <div class="mt-10 flex justify-center">
       <nav class="flex items-center space-x-3 bg-gray-800 bg-opacity-80 rounded-xl shadow-custom border border-gray-700 p-3 animate-fade-in">
-        <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
+        <a href="#" v-if="page > 1" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
           <i class="fas fa-chevron-left mr-2"></i> Previous
         </a>
         <a href="#" class="px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md">
@@ -156,7 +156,7 @@
         </a>
         <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200"> 2 </a>
         <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200"> 3 </a>
-        <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
+        <a href="#" v-if="page < totalPage" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
           Next <i class="fas fa-chevron-right ml-2"></i>
         </a>
       </nav>
@@ -177,8 +177,19 @@ const search = reactive({
     phone: "",
 })
 
-const page = 1;
+const page = ref(1);
+const totalPage = ref(1);
 const contacts = ref([]);
+const pages = ref([]);
+
+watch(totalPage, (value) => {
+    const data = [];
+    for (let i = 1; i <= value; i++) {
+        data.push(i);
+    }
+    pages.value = data;
+})
+
 async function fetchContacts() {
     const response = await contactList(token.value, {
         name: search.name,
@@ -191,6 +202,7 @@ async function fetchContacts() {
 
     if(response.status === 200) {
         contacts.value = responseBody.data;
+        totalPage.value = responseBody.paging.total_page;
     } else {
         await alertError(responseBody.errors);
     }
