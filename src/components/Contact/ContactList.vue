@@ -17,7 +17,7 @@
         </button>
       </div>
       <div id="searchFormContent" class="mt-4">
-        <form v-on:submit.prevent="fetchContacts">
+        <form v-on:submit.prevent="handleSearch">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
               <label for="search_name" class="block text-gray-300 text-sm font-medium mb-2">Name</label>
@@ -30,7 +30,8 @@
                   id="search_name"
                   name="search_name"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by name" v-model="search.name"
+                  placeholder="Search by name"
+                  v-model="search.name"
                 />
               </div>
             </div>
@@ -45,7 +46,8 @@
                   id="search_email"
                   name="search_email"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by email" v-model="search.email"
+                  placeholder="Search by email"
+                  v-model="search.email"
                 />
               </div>
             </div>
@@ -60,7 +62,8 @@
                   id="search_phone"
                   name="search_phone"
                   class="w-full pl-10 pr-3 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="Search by phone" v-model="search.phone"
+                  placeholder="Search by phone"
+                  v-model="search.phone"
                 />
               </div>
             </div>
@@ -92,18 +95,14 @@
         </RouterLink>
       </div>
 
-      
-      <div v-for="contact in contacts" :key="contact.id"
-       class="bg-gray-800 bg-opacity-80 rounded-xl shadow-custom border border-gray-700 overflow-hidden card-hover animate-fade-in">
+      <div v-for="contact in contacts" :key="contact.id" class="bg-gray-800 bg-opacity-80 rounded-xl shadow-custom border border-gray-700 overflow-hidden card-hover animate-fade-in">
         <div class="p-6">
           <RouterLink :to="`/dashboard/contacts/${contact.id}`" class="block cursor-pointer hover:bg-gray-700 rounded-lg transition-all duration-200 p-3">
             <div class="flex items-center mb-3">
               <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3 shadow-md">
                 <i class="fas fa-user text-white"></i>
               </div>
-              <h2 class="text-xl font-semibold text-white hover:text-blue-300 transition-colors duration-200">
-                {{ contact.first_name }} {{ contact.last_name }}
-              </h2>
+              <h2 class="text-xl font-semibold text-white hover:text-blue-300 transition-colors duration-200">{{ contact.first_name }} {{ contact.last_name }}</h2>
             </div>
             <div class="space-y-3 text-gray-300 ml-2">
               <p class="flex items-center">
@@ -136,6 +135,7 @@
               <i class="fas fa-edit mr-2"></i> Edit
             </RouterLink>
             <button
+              v-on:click="() => handleDelete(contact.id)"
               class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center"
             >
               <i class="fas fa-trash-alt mr-2"></i> Delete
@@ -148,15 +148,34 @@
     <!-- Pagination -->
     <div class="mt-10 flex justify-center">
       <nav class="flex items-center space-x-3 bg-gray-800 bg-opacity-80 rounded-xl shadow-custom border border-gray-700 p-3 animate-fade-in">
-        <a href="#" v-if="page > 1" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
+        <a
+          href="#"
+          v-if="page > 1"
+          v-on:click="() => handleChangePage(page - 1)"
+          class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center"
+        >
           <i class="fas fa-chevron-left mr-2"></i> Previous
         </a>
-        <a href="#" class="px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md">
-          1
+        <a
+          href="#"
+          v-for="value in pages"
+          :key="value"
+          v-on:click="() => handleChangePage(value)"
+          :class="[
+            page === value
+              ? 'px-4 py-2 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md'
+              : 'px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200',
+          ]"
+        >
+          {{ value }}
         </a>
-        <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200"> 2 </a>
-        <a href="#" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200"> 3 </a>
-        <a href="#" v-if="page < totalPage" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center">
+
+        <a
+          href="#"
+          v-if="page < totalPage"
+          v-on:click="() => handleChangePage(page + 1)"
+          class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center"
+        >
           Next <i class="fas fa-chevron-right ml-2"></i>
         </a>
       </nav>
@@ -165,52 +184,93 @@
 </template>
 
 <script setup>
-import { onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { contactList } from '../../lib/api/ContactApi';
+import { computed, onBeforeMount, onMounted, reactive, ref, watch } from 'vue';
+import { contactDelete, contactList } from '../../lib/api/ContactApi';
 import { useLocalStorage } from '@vueuse/core';
-import { alertError } from '../../lib/Alert';
+import { alertConfirm, alertError, alertSuccess } from '../../lib/Alert';
 
-const token = useLocalStorage("token", "")
+const token = useLocalStorage('token', '');
 const search = reactive({
-    name: "",
-    email: "",
-    phone: "",
-})
+  name: '',
+  email: '',
+  phone: '',
+});
 
 const page = ref(1);
 const totalPage = ref(1);
 const contacts = ref([]);
-const pages = ref([]);
-
-watch(totalPage, (value) => {
-    const data = [];
-    for (let i = 1; i <= value; i++) {
-        data.push(i);
+watch(
+  () => [search.name, search.email, search.phone],
+  (values) => {
+    const [name, email, phone] = values;
+    if (!name && !email && !phone) {
+      page.value = 1;
+      fetchContacts();
     }
-    pages.value = data;
-})
+  }
+);
+watch(page, () => {
+  fetchContacts();
+});
+onMounted(() => {
+  fetchContacts();
+});
+const pages = computed(() => {
+  const data = [];
+  for (let i = 1; i <= totalPage.value; i++) {
+    data.push(i);
+  }
+  return data;
+});
+
+async function handleChangePage(value) {
+  page.value = value;
+  await fetchContacts();
+}
+
+async function handleSearch(value) {
+  page.value = 1;
+  await fetchContacts();
+}
 
 async function fetchContacts() {
-    const response = await contactList(token.value, {
-        name: search.name,
-        email: search.email,
-        phone: search.phone,
-        page: page
-    })
-    const responseBody = await response.json();
-    console.log(responseBody);
+  const response = await contactList(token.value, {
+    name: search.name,
+    email: search.email,
+    phone: search.phone,
+    page: page.value,
+  });
+  const responseBody = await response.json();
+  console.log(responseBody);
 
-    if(response.status === 200) {
-        contacts.value = responseBody.data;
-        totalPage.value = responseBody.paging.total_page;
-    } else {
-        await alertError(responseBody.errors);
-    }
+  if (response.status === 200) {
+    contacts.value = responseBody.data;
+    totalPage.value = responseBody.paging.total_page;
+  } else {
+    await alertError(responseBody.errors);
+  }
+}
+
+async function handleDelete(id) {
+  if(! await alertConfirm("Are you sure you want to delete this contact?")){
+    return;
+  }
+
+  const response = await contactDelete(token.value, id);
+  const responseBody = await response.json();
+  console.log(responseBody);
+
+  if(response.status === 200) {
+    await alertSuccess("Contact deleted successfully")
+    await fetchContacts();
+  } else {
+    await alertError(responseBody.errors)
+  }
 }
 
 onBeforeMount(async () => {
-    await fetchContacts();
-})
+  await fetchContacts();
+});
 onMounted(() => {
   const toggleButton = document.getElementById('toggleSearchForm');
   const searchFormContent = document.getElementById('searchFormContent');
