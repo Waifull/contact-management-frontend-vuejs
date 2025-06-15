@@ -113,6 +113,7 @@
                   <i class="fas fa-edit mr-2"></i> Edit
                 </RouterLink>
                 <button
+                  v-on:click="() => handleDeleteAddress(address.id)"
                   class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-md flex items-center"
                 >
                   <i class="fas fa-trash-alt mr-2"></i> Delete
@@ -124,18 +125,18 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end space-x-4">
-          <a
-            href="dashboard.html"
+          <RouterLink
+            to="/dashboard/contacts"
             class="px-5 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 flex items-center shadow-md"
           >
             <i class="fas fa-arrow-left mr-2"></i> Back
-          </a>
-          <a
-            href="edit_contact.html"
+          </RouterLink>
+          <RouterLink
+            :to="`/dashboard/contacts/${id}/edit`"
             class="px-5 py-3 bg-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 font-medium shadow-lg transform hover:-translate-y-0.5 flex items-center"
           >
             <i class="fas fa-user-edit mr-2"></i> Edit Contact
-          </a>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -147,8 +148,8 @@ import { useLocalStorage } from '@vueuse/core';
 import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { contactDetail } from '../../lib/api/ContactApi';
-import { alertError } from '../../lib/Alert';
-import { addressList } from '../../lib/api/AddressApi';
+import { alertConfirm, alertError, alertSuccess } from '../../lib/Alert';
+import { addressDelete, addressList } from '../../lib/api/AddressApi';
 
 const route = useRoute();
 const { id } = route.params;
@@ -186,6 +187,23 @@ async function fetchContact() {
     contact.phone = responseBody.data.phone;
   } else {
     await alertError(responseBody.errors);
+  }
+}
+
+async function handleDeleteAddress(addressId) {
+  if(! await alertConfirm("Are you sure you want to delete this address?")){
+    return;
+  }
+
+  const response = await addressDelete(token.value, id, addressId);
+  const responseBody = await response.json();
+  console.log(responseBody);
+
+  if(response.status === 200) {
+    await alertSuccess("Address Deleted Successfully");
+    await fetchAddresses();
+  } else {
+
   }
 }
 
